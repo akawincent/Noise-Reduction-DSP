@@ -24,9 +24,9 @@
 
 ​		本文利用AR模型，将一帧的每一个样本点信号看作是前面信号经过一个系统后响应的加权线性组合。为了尽可能的用线性方程对原信号进行拟合，本例中使用400阶的AR模型对每一帧语音信号建模。线性方程建模公式如下：  
 
-![](http://latex.codecogs.com/svg.latex?x(k)=\sum_{i=1}^{400}a_{i}(k)x(k-i)+w(k))
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;![](http://latex.codecogs.com/svg.latex?x(k)=\sum_{i=1}^{400}a_{i}(k)x(k-i)+w(k))
 
-​		其中 $k$ 代表第几个样本点，$ a_{i}(k) x(k-i)+w(k)a_{i}(k), i=1,2,3 \ldots 400$ 代表模型系数，$ w(k)$代表高斯白噪声。
+​		其中![](http://latex.codecogs.com/svg.latex?k)代表第几个样本点![](http://latex.codecogs.com/svg.latex?a_{i}(k)x(k-i)+w(k)a_{i}(k),i=1,2,3\ldots400)代表模型系数，![](http://latex.codecogs.com/svg.latex?w)代表高斯白噪声。
 
 ​		对原信号利用LPC线性预测算法求解线性系数以及模型的方差，这个方差$ w(k)$可以作为卡尔曼滤波过程中线性状态方程的过程噪声来使用，以描述对AR线性模型的信赖程度。
 

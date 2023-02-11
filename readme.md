@@ -42,7 +42,7 @@ AR_order = 400; %AR模型阶数 400阶线性模型
 
 ​		在本例中对每一帧的语音信号列写离散线性高斯系统的状态方程和观测方程为：  
 
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;![](http://latex.codecogs.com/svg.latex?\begin{array}{l}X(k)=A\cdotX(k-1)+w(k) \\ y(k)=H\cdotX(k)+v(k)\end{array})  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;![](http://latex.codecogs.com/svg.latex?\begin{array}{l}X(k)=A\cdotX(k-1)+w(k)\\y(k)=H\cdotX(k)+v(k)\end{array})  
 
 
 ​		其中![](http://latex.codecogs.com/svg.latex?w(k))为线性模型的过程噪声，![](http://latex.codecogs.com/svg.latex?v(k))为带噪信号的观测噪声。系统的状态变量即样本点信号值为：  

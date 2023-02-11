@@ -4,11 +4,11 @@
 
 ### 一、动机
 
-​		在`issue_1`中采用`低通滤波器`可以较好的滤除高斯白噪声中大部分的高频段成分，并保留原始信号的频率成分。其中，布莱克曼窗函数设计的低通滤波器相较于矩形窗函数设计的低通滤波器，在过度带宽具有更好的频率截断特性，同时在更高频段处频率响应的波浪起伏总体趋势向下，保证了在高频段处依然可以保证衰减倍数较大，不会保留高频段成分的小强度响应。***显然采用布莱克曼窗函数设计的低通滤波器在语音去噪上性能更优越。***
+​		在issue_1中采用低通滤波器可以较好的滤除高斯白噪声中大部分的高频段成分，并保留原始信号的频率成分。其中，布莱克曼窗函数设计的低通滤波器相较于矩形窗函数设计的低通滤波器，在过度带宽具有更好的频率截断特性，同时在更高频段处频率响应的波浪起伏总体趋势向下，保证了在高频段处依然可以保证衰减倍数较大，不会保留高频段成分的小强度响应。<u>显然采用布莱克曼窗函数设计的低通滤波器在语音去噪上性能更优越。</u>
 
-​		然而，***低通滤波器去噪并不能区分低频段处的噪声和原信号频率成分，无法实现低频段处的高斯白噪声也较好滤除的效果，导致去噪后的语音信号仍然带有嘈杂的噪声成分。*** 因此在`issue_2`中采用`卡尔曼滤波器`尝试将全频段的高斯白噪声去除。
+​		然而，<u>低通滤波器去噪并不能区分低频段处的噪声和原信号频率成分，无法实现低频段处的高斯白噪声也较好滤除的效果，导致去噪后的语音信号仍然带有嘈杂的噪声成分。</u>因此在issue_2中采用卡尔曼滤波器尝试将全频段的高斯白噪声去除。
 
-​		参考《机器人学中的状态估计》一书第三章线性高斯系统，其中用最大后验估计的思想推导了线性高斯系统的状态估计问题实际上是最小二乘法问题，最终的优化求解方程为线性方程。书中针对离散、递归的情况，利用Cholesky法、RTS平滑算法进行求解，并继续推导出了***卡尔曼滤波器给出了线性高斯系统下的最优线性无偏估计的结论。***
+​		参考《机器人学中的状态估计》一书第三章线性高斯系统，其中用最大后验估计的思想推导了线性高斯系统的状态估计问题实际上是最小二乘法问题，最终的优化求解方程为线性方程。书中针对离散、递归的情况，利用Cholesky法、RTS平滑算法进行求解，并继续推导出了<u>卡尔曼滤波器给出了线性高斯系统下的最优线性无偏估计的结论。</u>
 
 ​		本项目中语音信号中加入的噪声为高斯白噪声，并且如果将原始语音信号建模为线性模型，则可以列写一个线性且高斯的状态空间方程。这样就利用卡尔曼滤波实现对信号的最佳线性无偏估计，从而去除高斯噪声的影响。
 
@@ -22,13 +22,13 @@
 
 #### 2.原信号线性建模
 
-​		本文利用AR模型，将一帧的每一个样本点信号看作是前面信号经过一个系统后响应的加权线性组合。为了尽可能的用线性方程对原信号进行拟合，本例中使用400阶的AR模型对每一帧语音信号建模。线性方程建模公式如下：  
+​		本文利用AR模型，将一帧的每一个样本点信号看作是前面信号经过一个系统后响应的加权线性组合。为了尽可能的用线性方程对原信号进行拟合，本例中使用400阶的AR模型对每一帧语音信号建模。线性方程建模公式如下：
+$$
+x(k)=\sum_{i=1}^{400} a_{i}(k) x(k-i)+w(k)
+$$
+​		其中 $k$ 代表第几个样本点，$ a_{i}(k) x(k-i)+w(k)a_{i}(k), i=1,2,3 \ldots 400$ 代表模型系数，$ w(k)$代表高斯白噪声。
 
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;![](http://latex.codecogs.com/svg.latex?x(k)=\sum_{i=1}^{400}a_{i}(k)x(k-i)+w(k))
-
-​		其中![](http://latex.codecogs.com/svg.latex?k)代表第几个样本点![](http://latex.codecogs.com/svg.latex?a_{i}(k)x(k-i)+w(k)a_{i}(k),i=1,2,3\ldots400)代表模型系数，![](http://latex.codecogs.com/svg.latex?w(k))代表高斯白噪声。
-
-​		对原信号利用LPC线性预测算法求解线性系数以及模型的方差，这个方差![](http://latex.codecogs.com/svg.latex?w)可以作为卡尔曼滤波过程中线性状态方程的过程噪声来使用，以描述对AR线性模型的信赖程度。
+​		对原信号利用LPC线性预测算法求解线性系数以及模型的方差，这个方差$ w(k)$可以作为卡尔曼滤波过程中线性状态方程的过程噪声来使用，以描述对AR线性模型的信赖程度。
 
 ​		对每一帧的语音信号都进行AR模型建模，这样便可以得到每一帧的状态方程线性系数以及过程噪声。
 
@@ -40,22 +40,33 @@ AR_order = 400; %AR模型阶数 400阶线性模型
 
 #### 3.卡尔曼滤波参数初始化
 
-​		在本例中对每一帧的语音信号列写离散线性高斯系统的状态方程和观测方程为：  
+​		在本例中对每一帧的语音信号列写离散线性高斯系统的状态方程和观测方程为：
+$$
+\begin{array}{l}
+X(k)=A \cdot X(k-1)+w(k) \\
+y(k)=H \cdot X(k)+v(k)
+\end{array}
+$$
+​		其中$w(k)$为线性模型的过程噪声，$v(k)$为带噪信号的观测噪声。系统的状态变量即样本点信号值为：
+$$
+X(k)=[x(k-p+1), x(k-p+2), \cdots x(k)]^{T}
+$$
+​		系统的系数矩阵为：
 
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;![](http://latex.codecogs.com/svg.latex?\begin{array}{l}X(k)=A\cdotX(k-1)+w(k)\\y(k)=H\cdotX(k)+v(k)\end{array})  
+$$
+A(k)=\left[\begin{array}{cccc}
+0 & 1 & \cdots & 0 \\
+\vdots & \vdots & \vdots & \vdots \\
+0 & 0 & \cdots & 1 \\
+a_{400}(k) & a_{399}(k) & \cdots & a_{1}(k)
+\end{array}\right]
+$$
+​		系统的观测矩阵为：
 
-
-​		其中![](http://latex.codecogs.com/svg.latex?w(k))为线性模型的过程噪声，![](http://latex.codecogs.com/svg.latex?v(k))为带噪信号的观测噪声。系统的状态变量即样本点信号值为：  
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;![](http://latex.codecogs.com/svg.latex?X(k)=[x(k-p+1),x(k-p+2),\cdotsx(k)]^{T})  
-
-​		系统的系数矩阵为：  
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;![](http://latex.codecogs.com/svg.latex?A(k)=\left[\begin{array}{cccc}0&1&\cdots&0\\\vdots&\vdots&\vdots&\vdots\\0&0&\cdots&1\\a_{400}(k)&a_{399}(k)&\cdots&a_{1}(k)\end{array}\right])
-
-​		系统的观测矩阵为：  
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;![](http://latex.codecogs.com/svg.latex?H(k)=[0,0,0,\cdots1]_{1\times400})
-
-
-​		观测噪声初始化为观测方程中的高斯白噪声![](http://latex.codecogs.com/svg.latex?v(k))，后验估计的误差协方差矩阵初始化也初始化为观测噪声![](http://latex.codecogs.com/svg.latex?v(k))，信号的后验估计初始化为第一帧的前400个样本点。
+$$
+H(k)=[0,0,0, \cdots 1]_{1 \times 400}
+$$
+​		观测噪声初始化为观测方程中的高斯白噪声$v(k)$，后验估计的误差协方差矩阵初始化也初始化为观测噪声$v(k)$，信号的后验估计初始化为第一帧的前400个样本点。
 
 ```matlab
 %% 初始化参数
@@ -157,9 +168,9 @@ filter_signal = filter_signal';
 - Noise_signal ————> 文件下存储着6种不同信噪比高斯白噪声下受污染的语音
 
 #### 2.issue_2中的文件：
+
 - KF_denoise.m ————> 设计卡尔曼滤波器对语音信号进行降噪，希望将低频段的高斯白噪声也滤除
-  			            运行时间将近1小时！！！！
+   运行时间将近1小时！！！！
 - newgaoshan.wav ————> 导入的原始语音信号
 - Noise_20dB.wav ————> 20dB高斯白噪声污染信号的语音
 - Noise_reduction_20dB.wav ————> 卡尔曼滤波对20dB高斯白噪声进行去噪后的语音
-

@@ -26,9 +26,9 @@
 
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;![](http://latex.codecogs.com/svg.latex?x(k)=\sum_{i=1}^{400}a_{i}(k)x(k-i)+w(k))
 
-​		其中![](http://latex.codecogs.com/svg.latex?k)代表第几个样本点![](http://latex.codecogs.com/svg.latex?a_{i}(k)x(k-i)+w(k)a_{i}(k),i=1,2,3\ldots400)代表模型系数，![](http://latex.codecogs.com/svg.latex?w)代表高斯白噪声。
+​		其中![](http://latex.codecogs.com/svg.latex?k)代表第几个样本点![](http://latex.codecogs.com/svg.latex?a_{i}(k)x(k-i)+w(k)a_{i}(k),i=1,2,3\ldots400)代表模型系数，![](http://latex.codecogs.com/svg.latex?w(k))代表高斯白噪声。
 
-​		对原信号利用LPC线性预测算法求解线性系数以及模型的方差，这个方差$ w(k)$可以作为卡尔曼滤波过程中线性状态方程的过程噪声来使用，以描述对AR线性模型的信赖程度。
+​		对原信号利用LPC线性预测算法求解线性系数以及模型的方差，这个方差![](http://latex.codecogs.com/svg.latex?w)可以作为卡尔曼滤波过程中线性状态方程的过程噪声来使用，以描述对AR线性模型的信赖程度。
 
 ​		对每一帧的语音信号都进行AR模型建模，这样便可以得到每一帧的状态方程线性系数以及过程噪声。
 
@@ -40,33 +40,22 @@ AR_order = 400; %AR模型阶数 400阶线性模型
 
 #### 3.卡尔曼滤波参数初始化
 
-​		在本例中对每一帧的语音信号列写离散线性高斯系统的状态方程和观测方程为：
-$$
-\begin{array}{l}
-X(k)=A \cdot X(k-1)+w(k) \\
-y(k)=H \cdot X(k)+v(k)
-\end{array}
-$$
-​		其中$w(k)$为线性模型的过程噪声，$v(k)$为带噪信号的观测噪声。系统的状态变量即样本点信号值为：
-$$
-X(k)=[x(k-p+1), x(k-p+2), \cdots x(k)]^{T}
-$$
-​		系统的系数矩阵为：
+​		在本例中对每一帧的语音信号列写离散线性高斯系统的状态方程和观测方程为：  
 
-$$
-A(k)=\left[\begin{array}{cccc}
-0 & 1 & \cdots & 0 \\
-\vdots & \vdots & \vdots & \vdots \\
-0 & 0 & \cdots & 1 \\
-a_{400}(k) & a_{399}(k) & \cdots & a_{1}(k)
-\end{array}\right]
-$$
-​		系统的观测矩阵为：
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;![](http://latex.codecogs.com/svg.latex?\begin{array}{l}X(k)=A\cdotX(k-1)+w(k)\\y(k)=H\cdotX(k)+v(k)\end{array})  
 
-$$
-H(k)=[0,0,0, \cdots 1]_{1 \times 400}
-$$
-​		观测噪声初始化为观测方程中的高斯白噪声$v(k)$，后验估计的误差协方差矩阵初始化也初始化为观测噪声$v(k)$，信号的后验估计初始化为第一帧的前400个样本点。
+
+​		其中![](http://latex.codecogs.com/svg.latex?w(k))为线性模型的过程噪声，![](http://latex.codecogs.com/svg.latex?v(k))为带噪信号的观测噪声。系统的状态变量即样本点信号值为：  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;![](http://latex.codecogs.com/svg.latex?X(k)=[x(k-p+1),x(k-p+2),\cdotsx(k)]^{T})  
+
+​		系统的系数矩阵为：  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;![](http://latex.codecogs.com/svg.latex?A(k)=\left[\begin{array}{cccc}0&1&\cdots&0\\\vdots&\vdots&\vdots&\vdots\\0&0&\cdots&1\\a_{400}(k)&a_{399}(k)&\cdots&a_{1}(k)\end{array}\right])
+
+​		系统的观测矩阵为：  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;![](http://latex.codecogs.com/svg.latex?H(k)=[0,0,0,\cdots1]_{1\times400})
+
+
+​		观测噪声初始化为观测方程中的高斯白噪声![](http://latex.codecogs.com/svg.latex?v(k))，后验估计的误差协方差矩阵初始化也初始化为观测噪声![](http://latex.codecogs.com/svg.latex?v(k))，信号的后验估计初始化为第一帧的前400个样本点。
 
 ```matlab
 %% 初始化参数
